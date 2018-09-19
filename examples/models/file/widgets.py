@@ -29,7 +29,7 @@ from bokeh.sampledata.autompg2 import autompg2 as mpg
 button = Button(label="Button (disabled) - still has click event", button_type="primary", disabled=True)
 toggle = Toggle(label="Toggle button", button_type="success")
 
-menu = [("Item 1", "item_1_value"), ("Item 2", "item_2_value"), ("Item 3", "item_3_value")]
+menu = [("Item 1", "item_1_value"), ("Item 2", "item_2_value"), None, ("Item 3", "item_3_value")]
 
 dropdown = Dropdown(label="Dropdown button", button_type="warning", menu=menu)
 #dropdown_split = Dropdown(label="Split button", button_type="danger", menu=menu, default_value="default"))

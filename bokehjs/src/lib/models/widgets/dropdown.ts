@@ -1,8 +1,7 @@
 import {AbstractButton, AbstractButtonView} from "./abstract_button"
 import {CallbackLike} from "../callbacks/callback"
 
-import {div} from "core/dom"
-import {clear_menus} from "core/menus"
+import {div, show, hide} from "core/dom"
 import * as p from "core/properties"
 
 export class DropdownView extends AbstractButtonView {
@@ -10,22 +9,19 @@ export class DropdownView extends AbstractButtonView {
 
   protected _open: boolean = false
 
-  connect_signals(): void {
-    super.connect_signals()
-    clear_menus.connect(() => this._clear_menu())
-  }
+  protected menu: HTMLElement
 
   render(): void {
     super.render()
 
     if (!this.is_split_button) {
-      this.el.classList.add("bk-bs-dropdown")
-      this.buttonEl.classList.add("bk-bs-dropdown-toggle")
-      this.buttonEl.appendChild(div({class: "bk-bs-caret"}))
+      this.el.classList.add("bk-dropdown")
+      this.buttonEl.classList.add("bk-dropdown-toggle")
+      this.buttonEl.appendChild(div({class: "bk-caret"}))
     } else {
-      this.el.classList.add("bk-bs-btn-group")
-      const caret = this._render_button(div({class: "bk-bs-caret"}))
-      caret.classList.add("bk-bs-dropdown-toggle")
+      this.el.classList.add("bk-btn-group")
+      const caret = this._render_button(div({class: "bk-caret"}))
+      caret.classList.add("bk-dropdown-toggle")
       caret.addEventListener("click", () => this._toggle_menu())
       this.el.appendChild(caret)
     }
@@ -41,33 +37,51 @@ export class DropdownView extends AbstractButtonView {
       }
     })
 
-    const menu = div({class: "bk-menu"}, items)
-    this.el.appendChild(menu)
+    this.menu = div({class: ["bk-menu", "bk-below"]}, items)
+    this.el.appendChild(this.menu)
+    hide(this.menu)
   }
 
-  protected _clear_menu(): void {
-    this._open = false
+  protected _show_menu(): void {
+    if (!this._open) {
+      this._open = true
+      show(this.menu)
+
+      const listener = (event: MouseEvent) => {
+        const {target} = event
+        if (target instanceof HTMLElement && !this.el.contains(target)) {
+          document.removeEventListener("click", listener)
+          this._hide_menu()
+        }
+      }
+      document.addEventListener("click", listener)
+    }
+  }
+
+  protected _hide_menu(): void {
+    if (this._open) {
+      this._open = false
+      hide(this.menu)
+    }
   }
 
   protected _toggle_menu(): void {
-    const open = this._open
-    clear_menus.emit()
-    if (!open)
-      this._open = true
+    if (this._open)
+      this._hide_menu()
+    else
+      this._show_menu()
   }
 
   protected _button_click(): void {
     if (!this.is_split_button)
       this._toggle_menu()
     else {
-      this._clear_menu()
-      //this.set_value(this.model.default_value)
+      this._hide_menu()
     }
   }
 
   protected _item_click(_i: number): void {
-    this._clear_menu()
-    //this.set_value((event.currentTarget as HTMLElement).dataset.value!)
+    this._hide_menu()
   }
 
   get is_split_button(): boolean {
